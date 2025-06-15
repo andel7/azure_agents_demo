@@ -1,0 +1,7 @@
+azure-ai-projects==1.0.0b10
+azure-identity==1.23.0
+python-dotenv>=1.0.0
+PyYAML 
+openai>=1.0.0
+jsonref>=1.1.0
+requests>=2.31.0 
