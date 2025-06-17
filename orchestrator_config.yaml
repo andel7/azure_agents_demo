@@ -29,11 +29,16 @@ orchestrator:
        - Ask for focused, brief response describing visual concepts and ideas
        - Remember their response to provide context to the next agent
 
-    6. **Generate actual images using create_image function**
-       - Based on the image_generator's visual concepts, create 1-2 specific image prompts
-       - Use create_image tool to generate actual images for the campaign
-       - Call the createImage operation with appropriate parameters (prompt, model: "dall-e-3", size: "1024x1024", quality: "standard")
-       - Include the generated image information in your final response
+    6. **Generate actual images using the image generation tool**
+       - Based on the image_generator's visual concepts, create 1-2 specific, detailed image prompts
+       - For each image prompt:
+         a) First call create_imagen_prediction with the prompt, aspect_ratio "1:1", and output_format "png"
+         b) Note the prediction ID from the response
+         c) Then immediately call get_prediction with the returned prediction ID
+         d) If status is "processing" or "starting", wait a few seconds and call get_prediction again
+         e) Repeat step d until status becomes "succeeded" (or "failed")
+         f) Extract the actual image URL from the "output" field when status is "succeeded"
+       - In your final response, include the actual image URLs (not just prediction IDs) so users can view the images
 
     7. **Use qa_validator function** to review content for quality
        - Provide all previous responses as comprehensive context including image generation results

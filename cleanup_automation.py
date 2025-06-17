@@ -36,21 +36,69 @@ class CleanupAutomation:
             sys.exit(1)
     
     def list_all_agents(self) -> List[Any]:
-        """List all agents in the project"""
+        """List all agents in the project (handling pagination)"""
         try:
-            agents = self.project_client.agents.list_agents()
-            # Agents are returned in the 'data' attribute as a list of dictionaries
-            return agents.data if hasattr(agents, 'data') else []
+            all_agents = []
+            has_more = True
+            after = None
+            
+            while has_more:
+                # Get a page of agents with limit=100 (maximum allowed)
+                if after:
+                    agents_page = self.project_client.agents.list_agents(limit=100, after=after)
+                else:
+                    agents_page = self.project_client.agents.list_agents(limit=100)
+                
+                # Add agents from this page to our list
+                if hasattr(agents_page, 'data') and agents_page.data:
+                    all_agents.extend(agents_page.data)
+                    
+                    # Check if there are more pages
+                    has_more = getattr(agents_page, 'has_more', False)
+                    if has_more and agents_page.data:
+                        # Use the last agent's ID as the 'after' cursor for next page
+                        after = agents_page.data[-1]['id']
+                    else:
+                        has_more = False
+                else:
+                    has_more = False
+            
+            print(f"📊 Found {len(all_agents)} total agents across all pages")
+            return all_agents
         except Exception as e:
             print(f"❌ Error listing agents: {e}")
             return []
     
     def list_all_threads(self) -> List[Any]:
-        """List all threads in the project"""
+        """List all threads in the project (handling pagination)"""
         try:
-            threads = self.project_client.agents.list_threads()
-            # Threads are returned in the 'data' attribute as a list of thread objects
-            return threads.data if hasattr(threads, 'data') else []
+            all_threads = []
+            has_more = True
+            after = None
+            
+            while has_more:
+                # Get a page of threads with limit=100 (maximum allowed)
+                if after:
+                    threads_page = self.project_client.agents.list_threads(limit=100, after=after)
+                else:
+                    threads_page = self.project_client.agents.list_threads(limit=100)
+                
+                # Add threads from this page to our list
+                if hasattr(threads_page, 'data') and threads_page.data:
+                    all_threads.extend(threads_page.data)
+                    
+                    # Check if there are more pages
+                    has_more = getattr(threads_page, 'has_more', False)
+                    if has_more and threads_page.data:
+                        # Use the last thread's ID as the 'after' cursor for next page
+                        after = threads_page.data[-1].id if hasattr(threads_page.data[-1], 'id') else threads_page.data[-1]['id']
+                    else:
+                        has_more = False
+                else:
+                    has_more = False
+            
+            print(f"📊 Found {len(all_threads)} total threads across all pages")
+            return all_threads
         except Exception as e:
             print(f"❌ Error listing threads: {e}")
             return []

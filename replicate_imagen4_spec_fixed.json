@@ -1,0 +1,201 @@
+{
+  "openapi": "3.0.0",
+  "info": {
+    "title": "Replicate API - Google Imagen-4",
+    "description": "API specification for Google Imagen-4 on Replicate for image generation",
+    "version": "1.0.0"
+  },
+  "servers": [
+    {
+      "url": "https://api.replicate.com/v1",
+      "description": "Replicate API server"
+    }
+  ],
+  "security": [
+    {
+      "apiKeyAuth": []
+    }
+  ],
+  "paths": {
+    "/models/google/imagen-4/predictions": {
+      "post": {
+        "operationId": "create_imagen_prediction",
+        "summary": "Generate image with Google Imagen-4",
+        "description": "Create a prediction using Google's Imagen-4 model for high-quality image generation. This returns a prediction ID that can be used to retrieve the final image URLs.",
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "input": {
+                    "type": "object",
+                    "properties": {
+                      "prompt": {
+                        "type": "string",
+                        "description": "Text description of the image to generate",
+                        "example": "A professional marketing image"
+                      },
+                      "aspect_ratio": {
+                        "type": "string",
+                        "description": "Aspect ratio of the generated image",
+                        "enum": ["1:1", "3:4", "4:3", "9:16", "16:9"],
+                        "default": "1:1"
+                      },
+                      "output_format": {
+                        "type": "string",
+                        "description": "Format of the output image",
+                        "enum": ["png", "jpg", "webp"],
+                        "default": "png"
+                      },
+                      "output_quality": {
+                        "type": "integer",
+                        "description": "Quality of the output image (1-100)",
+                        "minimum": 1,
+                        "maximum": 100,
+                        "default": 80
+                      }
+                    },
+                    "required": ["prompt"]
+                  }
+                },
+                "required": ["input"]
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "Prediction created successfully. Use the returned ID to check status and get results.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "id": {
+                      "type": "string",
+                      "description": "Unique identifier for the prediction"
+                    },
+                    "status": {
+                      "type": "string",
+                      "enum": ["starting", "processing", "succeeded", "failed", "canceled"],
+                      "description": "Current status of the prediction"
+                    },
+                    "urls": {
+                      "type": "object",
+                      "properties": {
+                        "get": {
+                          "type": "string",
+                          "format": "uri",
+                          "description": "URL to get the prediction status and results"
+                        }
+                      }
+                    },
+                    "created_at": {
+                      "type": "string",
+                      "format": "date-time"
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Bad request"
+          },
+          "401": {
+            "description": "Unauthorized"
+          },
+          "500": {
+            "description": "Internal server error"
+          }
+        }
+      }
+    },
+    "/predictions/{prediction_id}": {
+      "get": {
+        "operationId": "get_prediction",
+        "summary": "Get prediction status and results",
+        "description": "Retrieve the status and results of a prediction, including image URLs when completed",
+        "parameters": [
+          {
+            "name": "prediction_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            },
+            "description": "The ID of the prediction to retrieve"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Prediction details retrieved successfully",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "id": {
+                      "type": "string",
+                      "description": "Unique identifier for the prediction"
+                    },
+                    "status": {
+                      "type": "string",
+                      "enum": ["starting", "processing", "succeeded", "failed", "canceled"]
+                    },
+                    "output": {
+                      "oneOf": [
+                        {
+                          "type": "array",
+                          "items": {
+                            "type": "string",
+                            "format": "uri"
+                          },
+                          "description": "Array of URLs to generated images (when succeeded)"
+                        },
+                        {
+                          "type": "null",
+                          "description": "No output yet (when still processing)"
+                        }
+                      ]
+                    },
+                    "error": {
+                      "type": "string",
+                      "description": "Error message if the prediction failed"
+                    },
+                    "created_at": {
+                      "type": "string",
+                      "format": "date-time"
+                    },
+                    "completed_at": {
+                      "type": "string",
+                      "format": "date-time"
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Prediction not found"
+          },
+          "401": {
+            "description": "Unauthorized"
+          }
+        }
+      }
+    }
+  },
+  "components": {
+    "securitySchemes": {
+      "apiKeyAuth": {
+        "type": "apiKey",
+        "in": "header",
+        "name": "Authorization",
+        "description": "Bearer token for Replicate API"
+      }
+    }
+  }
+} 

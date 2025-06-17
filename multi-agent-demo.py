@@ -83,21 +83,20 @@ project_client = AIProjectClient.from_connection_string(
     conn_str=os.environ["PROJECT_CONNECTION_STRING"]
 )
 
-# Load the OpenAPI specification for OpenAI Images API
-with open("openai_images_spec.json", "r") as f:
-    openai_images_spec = jsonref.loads(f.read())
+# Load the OpenAPI specification for Replicate Imagen-4 API
+with open("replicate_imagen4_spec_fixed.json", "r") as f:
+    replicate_imagen4_spec = jsonref.loads(f.read())
 
-# Create or use existing connection for OpenAI API
-# Use the connection created in Azure AI Foundry
+# Create or use existing connection for Replicate API
 # You can override this with an environment variable
-connection_id = os.getenv("OPENAI_CONNECTION_ID", "/subscriptions/5d70695f-e89b-49af-a96a-71cfbef69887/resourceGroups/lev-test/providers/Microsoft.MachineLearningServices/workspaces/lev-7636/connections/openapi_key_for_images")
+connection_id = os.getenv("REPLICATE_CONNECTION_ID", "/subscriptions/5d70695f-e89b-49af-a96a-71cfbef69887/resourceGroups/lev-test/providers/Microsoft.MachineLearningServices/workspaces/lev-7636/connections/replicate-api-connection")
 print(f"🔗 Using connection ID: {connection_id}")
 
 try:
     # Try to create a connection if it doesn't exist
     from azure.ai.projects.models import ConnectionAuthenticationType, CustomKeyAuthConfiguration
     
-    api_key = os.getenv("OPEN_API_KEY_FOR_IMAGES")
+    api_key = os.getenv("REPLICATE_API_TOKEN")
     if api_key:
         # Create connection configuration
         connection_config = {
@@ -114,7 +113,7 @@ try:
         
 except Exception as e:
     print(f"Note: Please ensure connection '{connection_id}' exists in Azure AI Foundry")
-    print(f"Connection should have key 'Authorization' with value 'Bearer YOUR_API_KEY'")
+    print(f"Connection should have key 'Authorization' with value 'Bearer YOUR_REPLICATE_API_TOKEN'")
 
 # Use connection-based authentication
 auth = OpenApiConnectionAuthDetails(
@@ -125,9 +124,9 @@ auth = OpenApiConnectionAuthDetails(
 
 # Create OpenApiTool for image generation
 image_generation_tool = OpenApiTool(
-    name="create_image",
-    spec=openai_images_spec,
-    description="Generate images using OpenAI's DALL-E models. Use this tool when the image_generator agent provides visual concepts and you need to create actual images.",
+    name="generate_image",
+    spec=replicate_imagen4_spec,
+    description="Generate high-quality images using Google's Imagen-4 model on Replicate. Use this tool when the image_generator agent provides visual concepts and you need to create actual images. The tool accepts prompts and returns URLs to generated images.",
     auth=auth
 )
 
