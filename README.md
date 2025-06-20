@@ -10,10 +10,18 @@ This project creates an intelligent marketing campaign generator using Azure AI 
 - **Audience Researcher**: Identifies target personas and market segments  
 - **Campaign Strategist**: Develops comprehensive marketing strategies
 - **Content Creator**: Generates marketing copy and messaging
-- **Image Generator**: Creates visual concepts and actual images using DALL-E
+- **Image Generator**: Creates visual concepts and actual images using Google's Imagen-4 model via Replicate
 - **QA Validator**: Ensures content quality and brand compliance
 
-All agents are orchestrated by a central **Marketing Campaign Orchestrator** that coordinates the entire workflow and integrates OpenAI's image generation capabilities.
+All agents are orchestrated by a central **Marketing Campaign Orchestrator** that coordinates the entire workflow and integrates Google's Imagen-4 image generation capabilities via Replicate API.
+
+### Image Generation with Imagen-4
+
+The system leverages Google's state-of-the-art **Imagen-4** model through Replicate for high-quality image generation:
+- **Superior Quality**: Latest generation model producing highly detailed, professional images
+- **Brand-Appropriate**: Generates images suitable for enterprise marketing materials
+- **API Integration**: Seamless integration through OpenAPI specification
+- **Scalable**: Powered by Replicate's robust infrastructure
 
 ## 🏗️ Architecture
 
@@ -21,7 +29,7 @@ The system uses a multi-agent architecture with:
 
 1. **Specialized Agents**: Each agent has a specific role and expertise area
 2. **YAML Configuration**: Agent behaviors and instructions defined in configuration files
-3. **OpenAPI Integration**: Direct integration with OpenAI Images API for visual content
+3. **OpenAPI Integration**: Direct integration with Replicate Imagen-4 API for visual content
 4. **Azure AI Agents**: Leveraging Azure's agent framework for scalability and reliability
 
 ## 📁 Project Structure
@@ -33,10 +41,9 @@ AI_Tour_2025/
 ├── cleanup_automation.py         # Python cleanup automation script
 ├── agent_configs.yaml            # Configuration for specialized agents
 ├── orchestrator_config.yaml      # Configuration for main orchestrator
-├── openai_images_spec.json       # OpenAPI specification for image generation
+├── replicate_imagen4_spec_fixed.json  # OpenAPI specification for Replicate Imagen-4
 ├── create_connection.py          # Helper for Azure AI connection setup
 ├── requirements.txt              # Python dependencies
-├── README_OpenAPI_Setup.md       # Detailed OpenAPI setup guide
 └── .env                          # Environment variables (create this)
 ```
 
@@ -46,7 +53,7 @@ AI_Tour_2025/
 
 - Python 3.8+
 - Azure subscription with AI Services
-- OpenAI API key
+- Replicate API token (get from [replicate.com](https://replicate.com))
 - Azure AI Project (Azure AI Foundry)
 
 ### 2. Clone and Install Dependencies
@@ -59,6 +66,16 @@ source .venv/bin/activate  # On Windows: .venv\Scripts\activate
 pip install -r requirements.txt
 ```
 
+### Key Dependencies
+
+The project uses these main dependencies:
+- `azure-ai-projects==1.0.0b10` - Azure AI Agents framework
+- `azure-identity==1.23.0` - Azure authentication
+- `python-dotenv` - Environment variable management
+- `PyYAML` - Configuration file parsing
+- `jsonref` - JSON reference resolution for OpenAPI specs
+- `requests` - HTTP client for API calls
+
 ### 3. Environment Configuration
 
 Create a `.env` file with the following variables:
@@ -67,9 +84,9 @@ Create a `.env` file with the following variables:
 # Azure AI Project Connection
 PROJECT_CONNECTION_STRING="your_azure_ai_project_connection_string"
 
-# OpenAI API Configuration
-OPEN_API_KEY_FOR_IMAGES="your_openai_api_key"
-OPENAI_CONNECTION_ID="openai_images_connection"
+# Replicate API Configuration
+REPLICATE_API_TOKEN="your_replicate_api_token"
+REPLICATE_CONNECTION_ID="your_replicate_connection_id"
 
 # Additional Azure Configuration (for connection creation)
 AZURE_SUBSCRIPTION_ID="your_subscription_id"
@@ -88,10 +105,12 @@ python3 create_connection.py
 1. Go to [Azure AI Foundry](https://ai.azure.com)
 2. Navigate to your project → Settings → Connections
 3. Create a new "Custom keys" connection:
-   - **Name**: `openai_images_connection`
-   - **Target**: `https://api.openai.com/v1`
+   - **Name**: `replicate-api-connection` (or your preferred name)
+   - **Target**: `https://api.replicate.com`
    - **Authentication**: Custom Keys
-   - **Key**: Your OpenAI API key
+   - **Authorization**: `Bearer YOUR_REPLICATE_API_TOKEN`
+
+**Note**: If you use a different connection name, update the `REPLICATE_CONNECTION_ID` environment variable with your connection's full resource ID.
 
 ## 🎯 Usage
 
@@ -117,7 +136,7 @@ Enter product name: "HashiCorp Vault"
 → Campaign Strategist develops go-to-market strategy  
 → Content Creator generates marketing copy
 → Image Generator creates visual concepts
-→ System generates actual images via OpenAI
+→ System generates actual images via Replicate Imagen-4
 → QA Validator reviews all content
 → Final campaign package delivered
 ```
